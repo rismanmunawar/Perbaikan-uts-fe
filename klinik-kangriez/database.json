@@ -1,0 +1,32 @@
+{
+  "patients": [
+    {
+      "date": "2023-04-18",
+      "name": "Dede Munawar Risman",
+      "age": "21",
+      "poli": "Poli Umum",
+      "id": 3
+    },
+    {
+      "date": "2023-04-04",
+      "name": "Ibnu Tamsudin",
+      "age": "20",
+      "poli": "Poli Gigi",
+      "id": 4
+    }
+  ],
+  "polies": [
+    {
+      "name": "Poli Umum",
+      "id": 1
+    },
+    {
+      "name": "Poli Gigi",
+      "id": 2
+    },
+    {
+      "name": "Poli Anak",
+      "id": 3
+    }
+  ]
+}

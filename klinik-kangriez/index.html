@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<style>
+        table,
+        tr,
+        th,
+        td {
+        border: 1px solid #000;
+        padding: 5px;
+        }
+        table {
+        border-collapse: collapse;
+        }
+
+        td {
+        border: 1px solid black;
+        }
+        body {
+        background-color: lightblue;
+        }
+</style>
+</head>
+<body>
+    <h1>Klinik Avicenna</h1>
+    <p>Berikut adalah daftar pasien :</p>
+
+    <div>
+        <input type="date" id="tanggal" name="tanggal" />
+        <input type="text" placeholder="Isi Nama Pasien" id="nama" name="nama" />
+        <input type="text" placeholder="Isi Usia" id="usia" name="usia" />
+        <select id="politek" name="politek"></select>
+        <button id="btn" onclick="saveData()">Simpan</button>
+    </div>
+
+    <div style="margin-top: 10px">
+            <table cellspacing="0" border="1">
+      <thead>
+        <tr>
+          <th>NO</th>
+          <th>TANGGAL</th>
+          <th>NAMA</th>
+          <th>USIA</th>
+          <th>POLI</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="result"></tbody>
+    </table>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+    const saveData = async () => {
+        let date = document.getElementById('tanggal').value;
+        let name = document.getElementById('nama').value;
+        let age = document.getElementById('usia').value;
+        let poli = document.getElementById('politek').value;
+
+        await axios
+            .post(`http://localhost:3000/patients`, {
+            date: date,
+            name: name,
+            age: age,
+            poli: poli,
+            })
+
+            .then((Response) => {
+            alert('Data Berhasil Disimpan');
+            console.log(Response);
+            })
+
+            .catch((error) => {
+            console.log(error.message);
+            });
+    };
+
+    const editData = async (id, date, nama, usia, poli) => {
+        document.getElementById('tanggal').value = date;
+        document.getElementById('nama').value = nama;
+        document.getElementById('usia').value = usia;
+        document.getElementById('politek').value = poli;
+        document.getElementById('btn').innerText = 'Update';
+        document.getElementById('btn').setAttribute('onclick', `updateData(${id})`);
+    };
+
+    const updateData = async (id) => {
+        let date = document.getElementById('tanggal').value;
+        let nama = document.getElementById('nama').value;
+        let usia = document.getElementById('usia').value;
+        let poli = document.getElementById('politek').value;
+
+        let konfirmasi = 'Yakin? data ' + nama + ' Akan Di Ubah ?';
+
+        if (confirm(konfirmasi)) {
+            await axios
+            .patch(`http://localhost:3000/patients/${id}`, {
+                date: date,
+                name: nama,
+                age: usia,
+                poli: poli,
+            })
+
+            .then((Response) => {
+                alert('Data Berhasil Diupdate');
+                console.log(Response);
+            })
+
+            .catch((error) => {
+                console.log(error.message);
+            });
+        }
+    };
+
+    const deleteData = async (id) => {
+        let nama = document.getElementById('nama').value;
+        let konfirmasi = 'Yakin?? Data ' + nama + ' Mau Dihapus ?';
+        if (confirm(konfirmasi)) {
+            await axios
+            .delete(`http://localhost:3000/patients/${id}`)
+            .then((Response) => {
+                alert('Data Berhasil Dihapus');
+                console.log(Response);
+            })
+
+            .catch((error) => {
+                console.log(error.message);
+            });
+        }
+    };
+
+    const getPolitek = async () => {
+        await axios.get(`http://localhost:3000/polies`).then((Response) => {
+        let bucket = ``;
+        let pilih = Response.data;
+
+            for (let i = 0; i < pilih.length; i++) {
+        if (i === 0) {
+            bucket += `
+            <option value="Pilih" selected>Pilih</option>
+            <option value="${pilih[i].name}">${pilih[i].name}</option>
+            `;
+        } else {
+            bucket += `
+            <option value="${pilih[i].name}">${pilih[i].name}</option>
+            `;
+        }
+        }
+
+            document.getElementById('politek').innerHTML = bucket;
+        });
+    };
+
+    getPolitek();
+
+    const getData = async () => {
+    await axios
+        .get(`http://localhost:3000/patients`)
+        .then((Response) => {
+        let datas = ``;
+        let poli = Response.data;
+
+        if (poli.length > 0) {
+            for (let i = 0; i < poli.length; i++) {
+            datas += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${poli[i].date}</td>
+                            <td>${poli[i].name}</td>
+                            <td>${poli[i].age}</td>
+                            <td>${poli[i].poli}</td>
+                    
+                            <td>
+                                <button onclick="editData('${poli[i].id}', '${poli[i].date}',
+                                '${poli[i].name}', '${poli[i].age}', '${poli[i].poli}')">
+                                edit
+                                </button>
+                                <button onclick="deleteData(${poli[i].id})">delete</button>
+                            </td>
+                        </tr>
+                    
+                    `;
+            }
+        } else {
+            datas += `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: red">Data Tidak Ada</td>
+                </tr>
+            `;
+        }
+        document.getElementById('result').innerHTML = datas;
+        })
+
+        .catch((error) => {
+        let datas = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: red">${error.message}</td>
+                </tr>
+        `;
+        document.getElementById('result').innerHTML = datas;
+        });
+    };
+
+    getData();
+
+    </script>
+
+</body>
+</html>
